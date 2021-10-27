@@ -1,21 +1,59 @@
-import { StatusBar } from 'expo-status-bar';
-import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Alert } from "react-native";
+import styles from './App.styles';
 
-export default function App() {
+import ImageMultipleChoiceQuestion from './src/components/ImageMultipleChoiceQuestion';
+import OpenEndedQuestion from './src/components/OpenEndedQuestion/OpenEndedQuestion';
+import questions from "./assets/data/allQuestions";
+import Header from './src/components/Header';
+
+const App = () => {
+
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
+  const [currentQuestion, setCurrentQuestion] = useState(questions[currentQuestionIndex])
+
+  //Cada vez que cambia el valor de currentQuestionIndex lo seteará en el estado
+  useEffect(() => {
+    if (currentQuestionIndex >= questions.length) {
+      Alert.alert("You won");
+      setCurrentQuestionIndex(0);
+    } else {
+      setCurrentQuestion(questions[currentQuestionIndex]);
+    }
+
+  }, [currentQuestionIndex]);
+
+  const onCorrect = () => {
+    setCurrentQuestionIndex(currentQuestionIndex + 1);
+  }
+
+  const onWrong = () => {
+    Alert.alert("Wrong!");
+  }
+
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
+    <View style={styles.root}>
+      <Header progress={currentQuestionIndex / questions.length} />
+      {/* It should be a ternary expression image ? <ImageMultiple> : null but we can simplify it by
+      adding &&. If currentQuestion.type === 'IMAGE_MULTIPLE_CHOICE' && is false whatever comes after will be false to
+      true + false = false etc...
+      */}
+      {currentQuestion.type === 'IMAGE_MULTIPLE_CHOICE' && (
+        <ImageMultipleChoiceQuestion
+          question={currentQuestion}
+          onCorrect={onCorrect}
+          onWrong={onWrong}
+        />)}
+
+
+      {currentQuestion.type === 'OPEN_ENDED' && (
+        <OpenEndedQuestion
+          question={currentQuestion}
+          onCorrect={onCorrect}
+          onWrong={onWrong}
+        />)}
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+export default App;
